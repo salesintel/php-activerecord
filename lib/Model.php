@@ -1287,6 +1287,8 @@ class Model
 		$this->set_attributes_via_mass_assignment($this->find($pk)->attributes, false);
 		$this->reset_dirty();
 
+		$this->__new_record = false;
+
 		return $this;
 	}
 
@@ -1792,7 +1794,7 @@ class Model
 	 */
 	public function to_json(array $options=array())
 	{
-		return $this->serialize('Json', $options);
+		return $this->internalSerialize('Json', $options);
 	}
 
 	/**
@@ -1804,7 +1806,7 @@ class Model
 	 */
 	public function to_xml(array $options=array())
 	{
-		return $this->serialize('Xml', $options);
+		return $this->internalSerialize('Xml', $options);
 	}
 
    /**
@@ -1829,7 +1831,7 @@ class Model
    */
   public function to_csv(array $options=array())
   {
-    return $this->serialize('Csv', $options);
+    return $this->internalSerialize('Csv', $options);
   }
 
 	/**
@@ -1841,7 +1843,7 @@ class Model
 	 */
 	public function to_array(array $options=array())
 	{
-		return $this->serialize('Array', $options);
+		return $this->internalSerialize('Array', $options);
 	}
 
 	/**
@@ -1861,7 +1863,7 @@ class Model
 	 * @param array $options Options array for the serializer
 	 * @return string Serialized representation of the model
 	 */
-	private function serialize($type, $options)
+	private function internalSerialize($type, $options)
 	{
 		require_once 'Serialization.php';
 		$class = "ActiveRecord\\{$type}Serializer";
