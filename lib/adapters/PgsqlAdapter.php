@@ -34,7 +34,7 @@ class PgsqlAdapter extends Connection
 		return $sql . ' LIMIT ' . intval($limit) . ' OFFSET ' . intval($offset);
 	}
 
-	public function query_column_info($table)
+	public function query_column_info($table, $schema = 'public')
 	{
 		$sql = <<<SQL
 SELECT
@@ -53,20 +53,23 @@ SELECT
         WHERE c.oid = pg_attrdef.adrelid
         AND pg_attrdef.adnum=a.attnum
       ),'::[a-z_ ]+',''),'''$',''),'^''','') AS default
-FROM pg_attribute a, pg_class c, pg_type t
+FROM pg_attribute a, pg_class c, pg_type t, pg_namespace n
 WHERE c.relname = ?
+			AND n.nspname = ?
+		  AND c.relnamespace = n.oid
       AND a.attnum > 0
       AND a.attrelid = c.oid
       AND a.atttypid = t.oid
 ORDER BY a.attnum
 SQL;
-		$values = array($table);
+		$values = array($table, $schema);
 		return $this->query($sql,$values);
 	}
 
-	public function query_for_tables()
+	public function query_for_tables($schema = 'public')
 	{
-		return $this->query("SELECT tablename FROM pg_tables WHERE schemaname NOT IN('information_schema','pg_catalog')");
+		$values = [$schema];
+		return $this->query("SELECT tablename FROM pg_tables WHERE schemaname = ?", $values);
 	}
 
 	public function create_column(&$column)
